@@ -1,11 +1,15 @@
 const express = require('express');
 const app = express();
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config();
 const port = process.env.PORT || 5000
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173'],
+  credentials: true,
+}));
 app.use(express.json());
 
 
@@ -28,13 +32,42 @@ async function run() {
     const serviceCollection = client.db('farmTradeDB').collection('services');
     const userCollection = client.db('farmTradeDB').collection('users');
 
+     //auth api
+     app.post('/jwt', async(req, res) =>{
+      const user = req.body;
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'})
+      res
+      .cookie('token', token, {
+        httpOnly: true,
+        secure: false,
+      })
+      .send({success: true});
+    })
+
+    //user get
+    app.get('/users/:id', async (req, res) => {
+      const currentUser = req.params.id;
+      const query = { email: currentUser }
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    })
+
+
     // user post
     app.post('/users', async (req, res) => {
       const newUser = req.body;
       console.log(newUser);
       const result = await userCollection.insertOne(newUser);
       res.send(result);
-  })
+    })
+
+    //service get
+    app.get('/service', async (req, res) => {
+      const cursor = serviceCollection.find();
+      const result = await cursor.toArray();
+     res.send(result);
+   })
 
     // service post
     app.post('/services', async (req, res) => {
