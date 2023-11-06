@@ -26,7 +26,15 @@ async function run() {
     await client.connect();
 
     const serviceCollection = client.db('farmTradeDB').collection('services');
+    const userCollection = client.db('farmTradeDB').collection('users');
 
+    // user post
+    app.post('/users', async (req, res) => {
+      const newUser = req.body;
+      console.log(newUser);
+      const result = await userCollection.insertOne(newUser);
+      res.send(result);
+  })
 
     // service post
     app.post('/services', async (req, res) => {
