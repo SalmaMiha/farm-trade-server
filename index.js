@@ -79,6 +79,15 @@ async function run() {
         res.send(result);
     })
 
+    // my services get
+    app.get('/myservices/:id', async (req, res) => {
+      const email = req.params.id;
+      const query = { email: `${email}`};
+      const cursor = serviceCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+   })
+
     //get review 
     app.get('/reviews', async (req, res) => {
       const cursor = reviewCollection.find();
