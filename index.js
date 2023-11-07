@@ -31,6 +31,7 @@ async function run() {
 
     const serviceCollection = client.db('farmTradeDB').collection('services');
     const userCollection = client.db('farmTradeDB').collection('users');
+    const reviewCollection = client.db('farmTradeDB').collection('review');
 
      //auth api
      app.post('/jwt', async(req, res) =>{
@@ -63,7 +64,7 @@ async function run() {
     })
 
     //service get
-    app.get('/service', async (req, res) => {
+    app.get('/services', async (req, res) => {
       const cursor = serviceCollection.find();
       const result = await cursor.toArray();
      res.send(result);
@@ -76,6 +77,22 @@ async function run() {
         const result = await serviceCollection.insertOne(newService);
         res.send(result);
     })
+
+    app.get('/reviews', async (req, res) => {
+      const cursor = reviewCollection.find();
+      const result = await cursor.toArray();
+     res.send(result);
+   })
+
+    // review post
+    app.post('/reviews', async (req, res) => {
+        const review = req.body;
+        console.log(review);
+        const result = await reviewCollection.insertOne(review);
+        res.send(result);
+    })
+
+    
     
   } finally {
    
