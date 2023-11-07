@@ -46,7 +46,7 @@ async function run() {
       .send({success: true});
     })
 
-    //user get
+    //get user
     app.get('/users/:id', async (req, res) => {
       const currentUser = req.params.id;
       const query = { email: currentUser }
@@ -55,7 +55,7 @@ async function run() {
     })
 
 
-    // user post
+    // post user
     app.post('/users', async (req, res) => {
       const newUser = req.body;
       console.log(newUser);
@@ -63,14 +63,14 @@ async function run() {
       res.send(result);
     })
 
-    //service get
+    //get service
     app.get('/services', async (req, res) => {
       const cursor = serviceCollection.find();
       const result = await cursor.toArray();
      res.send(result);
    })
 
-    // service post
+    //post service 
     app.post('/services', async (req, res) => {
         const newService = req.body;
         console.log(newService);
@@ -78,13 +78,14 @@ async function run() {
         res.send(result);
     })
 
+    //get review 
     app.get('/reviews', async (req, res) => {
       const cursor = reviewCollection.find();
       const result = await cursor.toArray();
      res.send(result);
    })
 
-    // review post
+    //post review 
     app.post('/reviews', async (req, res) => {
         const review = req.body;
         console.log(review);
