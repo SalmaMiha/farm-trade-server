@@ -130,6 +130,23 @@ async function run() {
       res.send(result);
     })
 
+    //get booked service 
+    app.get('/bookedservices/:id', async (req, res) => {
+      const email = req.params.id;
+      const query = { bookingEmail: `${email}`};
+      const cursor = orderCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+   })
+
+  //  post booked service
+   app.post('/bookedservices', async (req, res) => {
+    const newService = req.body;
+    console.log(newService);
+    const result = await orderCollection.insertOne(newService);
+    res.send(result);
+})
+
 //   //  my schedules pending get
 //   app.get('/myschedules/:email/:status', async (req, res) => {
 //     const email = req.params.email;
