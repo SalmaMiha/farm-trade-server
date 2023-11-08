@@ -147,34 +147,30 @@ async function run() {
     res.send(result);
 })
 
-//   //  my schedules pending get
-//   app.get('/myschedules/:email/:status', async (req, res) => {
-//     const email = req.params.email;
-//     const status = req.params.status;
-    
-//     const query = { email: email, status: status }; // Define the query object with both fields
-  
-//     const cursor = orderCollection.find(query);
-//     const result = await cursor.toArray();
-//     res.send(result);
-//   });
-//   //  my schedules in progress get
-//   app.get('/myschedules/:id', async (req, res) => {
-//     const email = req.params.id;
-//     const query = { email: `${email}`};
-//     const cursor = orderCollection.find(query);
-//     const result = await cursor.toArray();
-//     res.send(result);
-//  })
-//   //  my schedules completed get
-//   app.get('/myschedules/:id', async (req, res) => {
-//     const email = req.params.id;
-//     const query = { email: `${email}`};
-//     const cursor = orderCollection.find(query);
-//     const result = await cursor.toArray();
-//     res.send(result);
-//  })
+  //  my schedules get
+  app.get('/myschedules/:id', async (req, res) => {
+    const email = req.params.id;
+    const query = { providerEmail: `${email}`};
+    const cursor = orderCollection.find(query);
+    const result = await cursor.toArray();
+    res.send(result);
+ })
 
+    // my schedule status patch
+    app.patch('/schedulestatus/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedSchedule = req.body;
+      console.log(updatedSchedule);
+      const updateDoc = {
+          $set: {
+              status: updatedSchedule.status
+          },
+      };
+      const result = await orderCollection.updateOne(filter, updateDoc);
+      res.send(result);
+  })
+  
     //get review 
     app.get('/reviews', async (req, res) => {
       const cursor = reviewCollection.find();
