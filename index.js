@@ -97,6 +97,7 @@ async function run() {
       res.send(result);
    })
 
+   // update service
    app.put('/myservices/:id', async (req, res) => {
     const id = req.params.id;
     const filter = { _id: new ObjectId(id) }
@@ -120,6 +121,14 @@ async function run() {
     const result = await serviceCollection.updateOne(filter, service, options);
     res.send(result);
 })
+
+    // delete service
+    app.delete('/service/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await serviceCollection.deleteOne(query);
+      res.send(result);
+    })
 
 //   //  my schedules pending get
 //   app.get('/myschedules/:email/:status', async (req, res) => {
