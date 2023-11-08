@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config();
 const port = process.env.PORT || 5000
@@ -33,6 +33,7 @@ async function run() {
     const userCollection = client.db('farmTradeDB').collection('users');
     const reviewCollection = client.db('farmTradeDB').collection('review');
     const newsletterCollection = client.db('farmTradeDB').collection('newsletter');
+    const orderCollection = client.db('farmTradeDB').collection('orders');
 
      //auth api
      app.post('/jwt', async(req, res) =>{
@@ -79,6 +80,14 @@ async function run() {
         res.send(result);
     })
 
+    // single service get
+    app.get('/services/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await serviceCollection.findOne(query);
+      res.send(result);
+    })
+
     // my services get
     app.get('/myservices/:id', async (req, res) => {
       const email = req.params.id;
@@ -87,6 +96,58 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
    })
+
+   app.put('/myservices/:id', async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) }
+    const options = { upsert: true };
+    const updatedService = req.body;
+
+    const service = {
+        $set: {
+          name : updatedService.name,
+          image : updatedService.image,
+          providerName : updatedService.providerName,
+          providerImage : updatedService.providerImage,
+          email : updatedService.email,
+          price : updatedService.price,
+          description : updatedService.description,
+          area : updatedService.area,
+
+        }
+    }
+
+    const result = await serviceCollection.updateOne(filter, service, options);
+    res.send(result);
+})
+
+//   //  my schedules pending get
+//   app.get('/myschedules/:email/:status', async (req, res) => {
+//     const email = req.params.email;
+//     const status = req.params.status;
+    
+//     const query = { email: email, status: status }; // Define the query object with both fields
+  
+//     const cursor = orderCollection.find(query);
+//     const result = await cursor.toArray();
+//     res.send(result);
+//   });
+//   //  my schedules in progress get
+//   app.get('/myschedules/:id', async (req, res) => {
+//     const email = req.params.id;
+//     const query = { email: `${email}`};
+//     const cursor = orderCollection.find(query);
+//     const result = await cursor.toArray();
+//     res.send(result);
+//  })
+//   //  my schedules completed get
+//   app.get('/myschedules/:id', async (req, res) => {
+//     const email = req.params.id;
+//     const query = { email: `${email}`};
+//     const cursor = orderCollection.find(query);
+//     const result = await cursor.toArray();
+//     res.send(result);
+//  })
 
     //get review 
     app.get('/reviews', async (req, res) => {
