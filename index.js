@@ -1,16 +1,18 @@
 const express = require('express');
 const app = express();
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config();
 const port = process.env.PORT || 5000
 
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: [ 'http://localhost:5173', 'https://farm-trade-541c2.web.app'],
   credentials: true,
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.70brgql.mongodb.net/?retryWrites=true&w=majority`;
@@ -24,10 +26,29 @@ const client = new MongoClient(uri, {
   }
 });
 
+const logger = (req, res, next) =>{
+  console.log('log: info', req.method, req.url);
+  next();
+}
+
+const verifyToken = (req, res, next) =>{
+  const token = req?.cookies?.token;
+  if(!token){
+      return res.status(401).send({message: 'unauthorized access'})
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
+      if(err){
+          return res.status(401).send({message: 'unauthorized access'})
+      }
+      req.user = decoded;
+      next();
+  })
+}
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    //await client.connect();
 
     const serviceCollection = client.db('farmTradeDB').collection('services');
     const userCollection = client.db('farmTradeDB').collection('users');
@@ -36,14 +57,15 @@ async function run() {
     const orderCollection = client.db('farmTradeDB').collection('orders');
 
      //auth api
-     app.post('/jwt', async(req, res) =>{
+     app.post('/jwt', logger, async(req, res) =>{
       const user = req.body;
       console.log(user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'})
       res
       .cookie('token', token, {
         httpOnly: true,
-        secure: false,
+        secure: true,
+        sameSite: 'none'
       })
       .send({success: true});
     })
@@ -66,7 +88,7 @@ async function run() {
     })
 
     //get service
-    app.get('/services', async (req, res) => {
+    app.get('/services', logger, verifyToken, async (req, res) => {
       const cursor = serviceCollection.find();
       const result = await cursor.toArray();
      res.send(result);
@@ -89,7 +111,7 @@ async function run() {
     })
 
     // my services get
-    app.get('/myservices/:id', async (req, res) => {
+    app.get('/myservices/:id', logger, verifyToken, async (req, res) => {
       const email = req.params.id;
       const query = { email: `${email}`};
       const cursor = serviceCollection.find(query);
@@ -131,7 +153,7 @@ async function run() {
     })
 
     //get booked service 
-    app.get('/bookedservices/:id', async (req, res) => {
+    app.get('/bookedservices/:id', logger, verifyToken, async (req, res) => {
       const email = req.params.id;
       const query = { bookingEmail: `${email}`};
       const cursor = orderCollection.find(query);
@@ -148,7 +170,7 @@ async function run() {
 })
 
   //  my schedules get
-  app.get('/myschedules/:id', async (req, res) => {
+  app.get('/myschedules/:id', logger, verifyToken, async (req, res) => {
     const email = req.params.id;
     const query = { providerEmail: `${email}`};
     const cursor = orderCollection.find(query);
