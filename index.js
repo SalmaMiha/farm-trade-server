@@ -47,14 +47,14 @@ const verifyToken = (req, res, next) =>{
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    //await client.connect();
+    
 
     const serviceCollection = client.db('farmTradeDB').collection('services');
     const userCollection = client.db('farmTradeDB').collection('users');
     const reviewCollection = client.db('farmTradeDB').collection('review');
     const newsletterCollection = client.db('farmTradeDB').collection('newsletter');
     const orderCollection = client.db('farmTradeDB').collection('orders');
+    const wishlistCollection = client.db('farmTradeDB').collection('wishlist');
 
      //auth api
      app.post('/jwt', logger, async(req, res) =>{
@@ -88,7 +88,7 @@ async function run() {
     })
 
     //get service
-    app.get('/services', logger, verifyToken, async (req, res) => {
+    app.get('/services', async (req, res) => {
       const cursor = serviceCollection.find();
       const result = await cursor.toArray();
      res.send(result);
@@ -102,6 +102,8 @@ async function run() {
         res.send(result);
     })
 
+   
+
     // single service get
     app.get('/services/:id', async (req, res) => {
       const id = req.params.id;
@@ -111,7 +113,7 @@ async function run() {
     })
 
     // my services get
-    app.get('/myservices/:id', logger, verifyToken, async (req, res) => {
+    app.get('/myservices/:id', async (req, res) => {
       const email = req.params.id;
       const query = { email: `${email}`};
       const cursor = serviceCollection.find(query);
@@ -153,7 +155,7 @@ async function run() {
     })
 
     //get booked service 
-    app.get('/bookedservices/:id', logger, verifyToken, async (req, res) => {
+    app.get('/bookedservices/:id', async (req, res) => {
       const email = req.params.id;
       const query = { bookingEmail: `${email}`};
       const cursor = orderCollection.find(query);
@@ -170,7 +172,7 @@ async function run() {
 })
 
   //  my schedules get
-  app.get('/myschedules/:id', logger, verifyToken, async (req, res) => {
+  app.get('/myschedules/:id', async (req, res) => {
     const email = req.params.id;
     const query = { providerEmail: `${email}`};
     const cursor = orderCollection.find(query);
@@ -207,6 +209,23 @@ async function run() {
         const result = await newsletterCollection.insertOne(review);
         res.send(result);
     })
+
+    //get wishlist 
+    app.get('/wishlist/:id', async (req, res) => {
+      const email = req.params.id;
+      const query = { email: `${email}`};
+      const cursor = wishlistCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+   })
+
+     //post wishlist 
+     app.post('/wishlist', async (req, res) => {
+      const newWishlist = req.body;
+      console.log(newWishlist);
+      const result = await wishlistCollection.insertOne(newWishlist);
+      res.send(result);
+  })
 
     
     
